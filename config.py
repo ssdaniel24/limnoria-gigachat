@@ -21,6 +21,13 @@ GigaChat = conf.registerPlugin('GigaChat')
 # This is where your configuration variables (if any) should go.  For example:
 # conf.registerGlobalValue(GigaChat, 'someConfigVariableName',
 #     registry.Boolean(False, _("""Help for someConfigVariableName.""")))
+conf.registerGlobalValue(GigaChat, 'auth_creds',
+        registry.String('', _("""Your GigaChat autorization data (required)."""),
+        private=True))
+
+conf.registerGlobalValue(GigaChat, 'verify_ssl_serts',
+        registry.Boolean(False, _("""Verify GigaChat API certs or not"""),
+        private=True))
 
 
 # vim:set shiftwidth=4 tabstop=4 expandtab textwidth=79:
