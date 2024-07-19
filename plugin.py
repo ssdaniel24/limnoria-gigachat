@@ -11,7 +11,8 @@ except:
     _ = lambda x: x
 
 
-import gigachat
+from gigachat import GigaChat as GC
+from gigachat.models import Chat, Messages, MessagesRole
 
 
 class GigaChat(callbacks.Plugin):
@@ -23,20 +24,38 @@ class GigaChat(callbacks.Plugin):
         text = text.replace('\n', self.registryValue('new_line_symbol'))
         return text
 
-    @wrap(['text'])
-    def msg(self, irc, msg, args, text):
-        """<message>
+    @wrap([
+        getopts({
+            'max-tokens': 'positiveInt',
+        }),
+        'text',
+    ])
+    def msg(self, irc, msg, args, optlist, text):
+        """[--max-tokens <positive int>] <message>
 
-        Sends the <message> to the GigaChat AI and prints answer.
+        Sends the <message> to the GigaChat AI and prints answer. You can
+        configure max tokens number that will be used for answer.
         """
         creds = self.registryValue('auth_creds')
         if creds == '':
             irc.error(_('"auth_creds" config value is empty!'))
             return
 
-        giga = gigachat.GigaChat(credentials=creds, verify_ssl_certs=self.registryValue('verify_ssl_serts'))
-        response = giga.chat(text)
-        raw_reply = response.choices[0].message.content
+        max_tokens = None
+        for (opt, arg) in optlist:
+            if opt == 'max-tokens':
+                max_tokens = arg
+
+        giga = GC(credentials=creds,
+                        verify_ssl_certs=self.registryValue('verify_ssl_serts'))
+        resp = giga.chat(Chat(
+            messages=[Messages(
+                role=MessagesRole.USER,
+                content=text,
+            )],
+            max_tokens=max_tokens
+        ))
+        raw_reply = resp.choices[0].message.content
         reply = self._replace_new_lines(raw_reply)
         irc.reply(reply)
 
