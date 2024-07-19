@@ -29,5 +29,9 @@ conf.registerGlobalValue(GigaChat, 'verify_ssl_serts',
         registry.Boolean(False, _("""Verify GigaChat API certs or not"""),
         private=True))
 
+conf.registerGlobalValue(GigaChat, 'new_line_symbol',
+        registry.StringSurroundedBySpaces(' ↵ ', _("""Symbol (or string), which
+        will be used instead of newline (\\n) in GigaChat answers.""")))
+
 
 # vim:set shiftwidth=4 tabstop=4 expandtab textwidth=79:

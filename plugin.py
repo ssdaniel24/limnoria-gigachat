@@ -18,8 +18,13 @@ class GigaChat(callbacks.Plugin):
     """Implements GigaChat AI API."""
     threaded = True
 
+    def _replace_new_lines(self, text: str) -> str:
+        text = text.replace('\n\n', '\n')
+        text = text.replace('\n', self.registryValue('new_line_symbol'))
+        return text
+
     @wrap(['text'])
-    def chat(self, irc, msg, args, text):
+    def msg(self, irc, msg, args, text):
         """<message>
 
         Sends the <message> to the GigaChat AI and prints answer.
@@ -27,13 +32,12 @@ class GigaChat(callbacks.Plugin):
         creds = self.registryValue('auth_creds')
         if creds == '':
             irc.error(_('"auth_creds" config value is empty!'))
-            print(creds)
             return
 
         giga = gigachat.GigaChat(credentials=creds, verify_ssl_certs=self.registryValue('verify_ssl_serts'))
         response = giga.chat(text)
         raw_reply = response.choices[0].message.content
-        reply = ' '.join(raw_reply.splitlines())
+        reply = self._replace_new_lines(raw_reply)
         irc.reply(reply)
 
 
