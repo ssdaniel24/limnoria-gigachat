@@ -18,6 +18,8 @@ limnoria │ user: Я — ваш личный помощник на сервер
 limnoria │ user: I am a chatbot, designed to help and provide information to users on the Internet Relay Chat network.
 ```
 
+*Note: plugin must be enabled in this channel. See **supybot.plugins.GigaChat.enabled** value.*
+
 ## Configuration
 
 - **supybot.plugins.GigaChat.auth_creds** - string with authorization data to use GigaChat API.
@@ -31,6 +33,8 @@ limnoria │ user: I am a chatbot, designed to help and provide information to u
 
 ### Channel-specific
 
+- **supybot.plugins.GigaChat.enabled** determines if AI enabled.
+    - `False` by default.
 - **supybot.plugins.GigaChat.model** determines AI model.
     - `"GigaChat"` by default.
 - **supybot.plugins.GigaChat.prompt** determines AI prompt.

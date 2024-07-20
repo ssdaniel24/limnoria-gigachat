@@ -27,6 +27,11 @@ class GigaChat(callbacks.Plugin):
         Sends the <message> to the GigaChat AI and prints answer. You can
         configure max tokens number that will be used for answer.
         """
+
+        if not self.registryValue('enabled'):
+            irc.error(_('Plugin is turned off in this channel'))
+            return
+
         creds = self.registryValue('auth_creds')
         if creds == '':
             irc.error(_('"auth_creds" config value is empty!'))

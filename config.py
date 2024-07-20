@@ -34,10 +34,9 @@ conf.registerGlobalValue(GigaChat, 'new_line_symbol',
         will be used instead of newline (\\n) in GigaChat answers.""")))
 
 
-
-conf.registerChannelValue(GigaChat, 'max_tokens',
-        registry.PositiveInteger(256, _("""Max tokens that will be used for AI
-        answers""")))
+conf.registerChannelValue(GigaChat, 'enabled',
+        registry.Boolean(False, _("""Determines if AI is turned on in this
+        channel""")))
 
 conf.registerChannelValue(GigaChat, 'model',
         registry.String('GigaChat', _("""AI model that will be used for
@@ -48,6 +47,10 @@ conf.registerChannelValue(GigaChat, 'prompt',
             """Ты $botnick - IRC-бот. Будь вежлив и помогай пользователю.""",
             _("""Prompt that configures AI""")
         ))
+
+conf.registerChannelValue(GigaChat, 'max_tokens',
+        registry.PositiveInteger(256, _("""Max tokens that will be used for AI
+        answers""")))
 
 
 # vim:set shiftwidth=4 tabstop=4 expandtab textwidth=79:
