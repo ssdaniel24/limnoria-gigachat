@@ -2,6 +2,11 @@
 
 [Limnoria](https://limnoria.net/) is IRC bot and this repo is an implementation of [Gigachat](https://developers.sber.ru/gigachat) API. Requires [gigachat](https://github.com/ai-forever/gigachat) module. Inspired by [ChatGPT limnoria plugin by oddluck](https://github.com/oddluck/limnoria-plugins/tree/master/ChatGPT).
 
+TODO:
+- translation
+- maybe complex chatting with saving messages
+- and managing them?..
+
 ## Commands
 
 - `msg <text>` sends given text to the AI and prints its answer:
