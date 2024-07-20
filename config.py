@@ -25,13 +25,29 @@ conf.registerGlobalValue(GigaChat, 'auth_creds',
         registry.String('', _("""Your GigaChat autorization data (required)."""),
         private=True))
 
-conf.registerGlobalValue(GigaChat, 'verify_ssl_serts',
+conf.registerGlobalValue(GigaChat, 'verify_ssl_certs',
         registry.Boolean(False, _("""Verify GigaChat API certs or not"""),
         private=True))
 
 conf.registerGlobalValue(GigaChat, 'new_line_symbol',
         registry.StringSurroundedBySpaces(' ↵ ', _("""Symbol (or string), which
         will be used instead of newline (\\n) in GigaChat answers.""")))
+
+
+
+conf.registerChannelValue(GigaChat, 'max_tokens',
+        registry.PositiveInteger(256, _("""Max tokens that will be used for AI
+        answers""")))
+
+conf.registerChannelValue(GigaChat, 'model',
+        registry.String('GigaChat', _("""AI model that will be used for
+        answers""")))
+
+conf.registerChannelValue(GigaChat, 'prompt',
+        registry.String(
+            """Ты $botnick - IRC-бот. Будь вежлив и помогай пользователю.""",
+            _("""Prompt that configures AI""")
+        ))
 
 
 # vim:set shiftwidth=4 tabstop=4 expandtab textwidth=79:
