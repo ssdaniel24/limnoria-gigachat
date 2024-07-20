@@ -1,6 +1,8 @@
 # Gigachat AI plugin for Limnoria
 
-[Limnoria](https://limnoria.net/) is IRC bot and this repo is an implementation of [Gigachat](https://developers.sber.ru/gigachat) API. Requires [gigachat](https://github.com/ai-forever/gigachat) module. Inspired by [ChatGPT limnoria plugin by oddluck](https://github.com/oddluck/limnoria-plugins/tree/master/ChatGPT).
+[Limnoria](https://limnoria.net/) is IRC bot and this repo is an implementation of [Gigachat](https://developers.sber.ru/gigachat) API. Inspired by [ChatGPT limnoria plugin by oddluck](https://github.com/oddluck/limnoria-plugins/tree/master/ChatGPT).
+
+Requires [gigachat](https://github.com/ai-forever/gigachat) module.
 
 TODO:
 - translation

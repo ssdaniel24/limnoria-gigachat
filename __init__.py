@@ -10,7 +10,7 @@ from supybot import world
 __version__ = "0.1"
 __author__ = supybot.Author(nick='ssdaniel24', email='bo7oaonteg2m@mail.ru')
 __contributors__ = {}
-__url__ = 'https://github.com/ssdaniel24/GigaChat'
+__url__ = 'https://github.com/ssdaniel24/limnoria-gigachat'
 
 from . import config
 from . import plugin
