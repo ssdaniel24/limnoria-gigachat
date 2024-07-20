@@ -2,13 +2,8 @@ from supybot import utils, plugins, ircutils, callbacks
 from supybot.commands import *
 from supybot.i18n import PluginInternationalization
 
-try:
-    from supybot.i18n import PluginInternationalization
-    _ = PluginInternationalization('GigaChat')
-except:
-    # Placeholder that allows to run the plugin on a bot
-    # without the i18n module
-    _ = lambda x: x
+from supybot.i18n import PluginInternationalization, internationalizeDocstring
+_ = PluginInternationalization('GigaChat')
 
 
 from gigachat import GigaChat as GC
@@ -32,6 +27,7 @@ class GigaChat(callbacks.Plugin):
         }),
         'text',
     ])
+    @internationalizeDocstring
     def msg(self, irc, msg, args, optlist, text):
         """[--max-tokens <positive int>] <message>
 
@@ -69,6 +65,7 @@ class GigaChat(callbacks.Plugin):
         }),
         'text',
     ])
+    @internationalizeDocstring
     def chat(self, irc, msg, args, optlist, text):
         """[--max-tokens <positive int>] [--restore] <message>
 
