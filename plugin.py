@@ -28,13 +28,17 @@ class GigachatDB:
                                  name TEXT,
                                  created_at INTEGER NOT NULL,
                                  content TEXT,
-                                 user_id INTEGER NOT NULL
+                                 user_id INTEGER NOT NULL,
                                  UNIQUE(name, user_id));
+        """)
+        cur.execute("""
             CREATE TABLE Chats(chat_id BLOB NOT NULL PRIMARY KEY,
                                name TEXT,
                                prompt_id BLOB REFERENCES Prompts,
-                               user_id INTEGER NOT NULL
+                               user_id INTEGER NOT NULL,
                                UNIQUE(name, user_id));
+        """)
+        cur.execute("""
             CREATE TABLE Messages(message_id BLOB NOT NULL PRIMARY KEY,
                                   role INTEGER CHECK (role IN (1, 2)),
                                   created_at INTEGER NOT NULL,
@@ -120,37 +124,46 @@ class GigaChat(callbacks.Plugin):
         text = text.replace('\n', self.registryValue('new_line_symbol'))
         return text
 
+    def _is_config_ok(self, irc) -> bool:
+        """Checks config for need values and returns False, if they are not
+        set. Also sends error to user via given irc context."""
+        if not self.registryValue('enabled'):
+            irc.error(_('Plugin is turned off in this channel'))
+            return False
+        if self.registryValue('auth_creds') == '':
+            irc.error(_('"auth_creds" config value is empty!'))
+            return False
+        return True
+
+    def _get_answer(self, channel, messages: list[Messages]) -> Messages:
+        """Returns answer from AI"""
+        creds = self.registryValue('auth_creds')
+        giga = GC(credentials=creds,
+                verify_ssl_certs=self.registryValue('verify_ssl_certs'))
+
+        resp = giga.chat(Chat(
+            model=self.registryValue("model", channel),
+            messages=messages,
+            max_tokens=self.registryValue('max_tokens', channel),
+        ))
+        return resp.choices[0].message
+
     @internationalizeDocstring
     def msg(self, irc, msg, args, text):
         """<message>
 
         Sends the <message> to the GigaChat AI and prints answer.
         """
-
-        if not self.registryValue('enabled'):
-            irc.error(_('Plugin is turned off in this channel'))
+        if not self._is_config_ok(irc):
             return
-
-        creds = self.registryValue('auth_creds')
-        if creds == '':
-            irc.error(_('"auth_creds" config value is empty!'))
-            return
-
-        giga = GC(credentials=creds,
-                verify_ssl_certs=self.registryValue('verify_ssl_certs'))
 
         prompt = self.registryValue("prompt", msg.channel).replace('$botnick',
                 irc.nick)
 
-        resp = giga.chat(Chat(
-            model=self.registryValue("model", msg.channel),
-            messages=[
-                Messages(role=MessagesRole.SYSTEM, content=prompt),
-                Messages(role=MessagesRole.USER, content=text)
-            ],
-            max_tokens=self.registryValue('max_tokens', msg.channel),
-        ))
-        raw_reply = resp.choices[0].message.content
+        raw_reply = self._get_answer(msg.channel, messages=[
+            Messages(role=MessagesRole.SYSTEM, content=prompt),
+            Messages(role=MessagesRole.USER, content=text),
+        ]).content
         reply = self._replace_new_lines(raw_reply)
         irc.reply(reply)
     msg = wrap(msg, ['text'])
