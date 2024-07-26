@@ -1,4 +1,4 @@
-from supybot import conf, callbacks
+from supybot import conf, ircdb, callbacks
 from supybot.commands import *
 
 from supybot.i18n import PluginInternationalization, internationalizeDocstring
@@ -76,7 +76,7 @@ class GigachatDB:
         cur.execute("""
             SELECT chat_id FROM Chats
                 WHERE user_id = ? AND
-                      chat_name = ?;
+                      name = ?;
         """, (user_id, chat_name))
         res = cur.fetchone()
         if res is not None:
@@ -87,13 +87,14 @@ class GigachatDB:
         cur.execute("""INSERT INTO Chats VALUES(?, ?, ?, ?)""", row)
         return chat_id
 
-    def add_message(self, user_id: int, role: str, content: str):
+    def add_message(self, user_id: int, message: Messages):
         """Adds given message to user conservation in DB"""
         cur = self._connection.cursor()
         chat_id = self.get_chat_id_and_create_if_not_exists(user_id, "default")
-        role_in_db = 1 if role == MessagesRole.USER else MessagesRole.ASSISTANT
-        row = (uuid1().bytes, role_in_db, self._get_timestamp(), content,
-               chat_id)
+        role = message.role
+        role_in_db = 1 if role == MessagesRole.USER else 2 # MessagesRole.ASSISTANT
+        row = (uuid1().bytes, role_in_db, self._get_timestamp(),
+               message.content, chat_id)
         cur.execute("""INSERT INTO Messages VALUES(?, ?, ?, ?, ?)""", row)
 
     def clear_chat(self, user_id: int):
@@ -104,7 +105,7 @@ class GigachatDB:
                 WHERE chat_id =
                     (SELECT chat_id FROM Chats
                         WHERE user_id = ? AND
-                              chat_name = ?);
+                              name = ?);
         """, (user_id, "default"))
 
     def close(self):
@@ -115,7 +116,8 @@ class GigaChat(callbacks.Plugin):
     """Implements GigaChat AI API."""
     threaded = True
     def __init__(self, irc):
-        callbacks.Plugin.__init__(self, irc)
+        self.__parent = super(GigaChat, self)
+        self.__parent.__init__(irc)
         self.db = GigachatDB(os.path.join(conf.supybot.directories.data(),
                 'GigaChat.db'))
 
@@ -168,6 +170,63 @@ class GigaChat(callbacks.Plugin):
         irc.reply(reply)
     msg = wrap(msg, ['text'])
 
+    @internationalizeDocstring
+    def chat(self, irc, msg, args, text):
+        """<message>
+
+        Sends the <message> to the GigaChat AI, prints answer and saves it in
+        DB for using in future answers.
+        """
+        if not self._is_config_ok(irc):
+            return
+
+        try:
+            user_id = ircdb.users.getUser(msg.prefix).id
+        except KeyError:
+            irc.errorNotRegistered()
+            return
+
+        prompt = self.registryValue("prompt", msg.channel).replace('$botnick',
+                irc.nick)
+
+        messages = self.db.get_messages(user_id)
+        print(messages)
+        messages.insert(0, Messages(role=MessagesRole.SYSTEM, content=prompt))
+        user_query = Messages(role=MessagesRole.USER, content=text)
+        messages.append(user_query)
+
+        print(messages)
+
+        answer = self._get_answer(msg.channel, messages=messages)
+        self.db.add_message(user_id, user_query)
+        self.db.add_message(user_id, answer)
+        reply = self._replace_new_lines(answer.content)
+        irc.reply(reply)
+    chat = wrap(chat, ['text'])
+
+    @internationalizeDocstring
+    def clear(self, irc, msg, args):
+        """takes no arguments
+
+        Clears your conservation with Gigachat AI, so you will start chat from
+        scratch without any context.
+        """
+        if not self._is_config_ok(irc):
+            return
+
+        try:
+            user_id = ircdb.users.getUser(msg.prefix).id
+        except KeyError:
+            irc.errorNotRegistered()
+            return
+
+        self.db.clear_chat(user_id)
+        irc.replySuccess()
+    clear = wrap(clear)
+
+    def die(self):
+        self.db.close()
+        self.__parent.die()
 
 Class = GigaChat
 

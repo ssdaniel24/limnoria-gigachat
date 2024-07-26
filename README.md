@@ -5,7 +5,9 @@
 Requires [gigachat](https://github.com/ai-forever/gigachat) module.
 
 TODO:
+- add more auth methord for API
 - translation
+- testing
 - maybe complex chatting with saving messages
 - and managing them?..
 
@@ -17,10 +19,17 @@ TODO:
     user │ @msg Кто ты, чудо?
 limnoria │ user: Я — ваш личный помощник на сервере.
     user │ @msg who are you? (Speak english)
-limnoria │ user: I am a chatbot, designed to help and provide information to users on the Internet Relay Chat network.
+limnoria │ user: I am a chatbot, designed to help and provide information to
+         │ users on the Internet Relay Chat network.
 ```
 
 *Note: plugin must be enabled in this channel. See **supybot.plugins.GigaChat.enabled** value.*
+
+### Advanced chatting
+
+Bot supports saving your dialogs and using them as context for your future messages.
+
+...
 
 ## Configuration
 
