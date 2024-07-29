@@ -123,17 +123,25 @@ class GigachatDB:
         row = (uuid1().bytes, role_in_db, self._get_timestamp(),
                message.content, chat_id)
         cur.execute("""INSERT INTO Messages VALUES(?, ?, ?, ?, ?)""", row)
-        res = cur.execute("""SELECT * FROM Messages""")
+
+    def rm_last_bot_message(self, user_id: int):
+        """Removes last bot message from given user chat"""
+        cur = self._connection.cursor()
+        chat_id = self._get_current_user_chat(user_id)
+        cur.execute("""
+            DELETE FROM Messages
+                WHERE message_id =
+                    (SELECT message_id FROM Messages
+                        WHERE chat_id = ? AND role = 2
+                        ORDER BY created_at
+                        LIMIT 1);
+        """, (chat_id,))
 
     def clear_chat(self, user_id: int):
         """Deletes every message from given user's chat with given name"""
         cur = self._connection.cursor()
-        cur.execute("""
-            DELETE FROM Messages
-                WHERE chat_id =
-                    (SELECT chat_id FROM UserCurrent
-                        WHERE user_id = ?);
-        """, (user_id,))
+        chat_id = self._get_current_user_chat(user_id)
+        cur.execute("""DELETE FROM Messages WHERE chat_id = ?;""", (chat_id,))
 
     def close(self):
         self._connection.close()
@@ -141,7 +149,7 @@ class GigachatDB:
 
 class GigaChat(callbacks.Plugin):
     """Implements GigaChat AI API."""
-    threaded = True
+    # threaded = True
     def __init__(self, irc):
         self.__parent = super(GigaChat, self)
         self.__parent.__init__(irc)
@@ -153,7 +161,7 @@ class GigaChat(callbacks.Plugin):
         text = text.replace('\n', self.registryValue('new_line_symbol'))
         return text
 
-    def _is_config_ok(self, irc) -> bool:
+    def is_config_ok(self, irc) -> bool:
         """Checks config for need values and returns False, if they are not
         set. Also sends error to user via given irc context."""
         if not self.registryValue('enabled'):
@@ -164,7 +172,7 @@ class GigaChat(callbacks.Plugin):
             return False
         return True
 
-    def _get_answer(self, channel, messages: list[Messages]) -> Messages:
+    def get_answer(self, channel, messages: list[Messages]) -> Messages:
         """Returns answer from AI"""
         creds = self.registryValue('auth_creds')
         giga = GC(credentials=creds,
@@ -183,13 +191,13 @@ class GigaChat(callbacks.Plugin):
 
         Sends the <message> to the GigaChat AI and prints answer.
         """
-        if not self._is_config_ok(irc):
+        if not self.is_config_ok(irc):
             return
 
         prompt = self.registryValue("prompt", msg.channel).replace('$botnick',
                 irc.nick)
 
-        raw_reply = self._get_answer(msg.channel, messages=[
+        raw_reply = self.get_answer(msg.channel, messages=[
             Messages(role=MessagesRole.SYSTEM, content=prompt),
             Messages(role=MessagesRole.USER, content=text),
         ]).content
@@ -198,13 +206,13 @@ class GigaChat(callbacks.Plugin):
     msg = wrap(msg, ['text'])
 
     @internationalizeDocstring
-    def chat(self, irc, msg, args, text):
+    def amsg(self, irc, msg, args, text):
         """<message>
 
         Sends the <message> to the GigaChat AI, prints answer and saves it in
         DB for using in future answers.
         """
-        if not self._is_config_ok(irc):
+        if not self.is_config_ok(irc):
             return
 
         try:
@@ -220,13 +228,43 @@ class GigaChat(callbacks.Plugin):
         messages.insert(0, Messages(role=MessagesRole.SYSTEM, content=prompt))
         user_message = Messages(role=MessagesRole.USER, content=text)
         messages.append(user_message)
+        print(messages)
 
-        ai_answer = self._get_answer(msg.channel, messages=messages)
+        ai_answer = self.get_answer(msg.channel, messages=messages)
         self.db.add_message(user_id, user_message)
         self.db.add_message(user_id, ai_answer)
         reply = self._replace_new_lines(ai_answer.content)
         irc.reply(reply)
-    chat = wrap(chat, ['text'])
+    amsg = wrap(amsg, ['text'])
+
+    @internationalizeDocstring
+    def retry(self, irc, msg, args):
+        """takes no arguments
+
+        Deletes last AI message from current chat and gets new AI answer.
+        """
+        if not self.is_config_ok(irc):
+            return
+
+        try:
+            user_id = ircdb.users.getUser(msg.prefix).id
+        except KeyError:
+            irc.errorNotRegistered()
+            return
+
+        prompt = self.registryValue("prompt", msg.channel).replace('$botnick',
+                irc.nick)
+
+        self.db.rm_last_bot_message(user_id)
+        messages = self.db.get_messages(user_id)
+        messages.insert(0, Messages(role=MessagesRole.SYSTEM, content=prompt))
+        print(messages)
+
+        ai_answer = self.get_answer(msg.channel, messages=messages)
+        self.db.add_message(user_id, ai_answer)
+        reply = self._replace_new_lines(ai_answer.content)
+        irc.reply(reply)
+    retry = wrap(retry)
 
     @internationalizeDocstring
     def clear(self, irc, msg, args):
@@ -235,7 +273,7 @@ class GigaChat(callbacks.Plugin):
         Clears your conservation with Gigachat AI, so you will start chat from
         scratch without any context.
         """
-        if not self._is_config_ok(irc):
+        if not self.is_config_ok(irc):
             return
 
         try:
