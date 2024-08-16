@@ -16,12 +16,18 @@ TODO to v1.0:
 ```bash
 pip3 install -r requirements.txt
 ```
-3. Use the `msg` command, if you're bot owner.
+3. Follow [official guide (in russian only)](https://developers.sber.ru/docs/ru/gigachat/individuals-quickstart#shag-1-sozdayte-proekt-giga-chat-api) to get auth credentials and set it in bot **privately**:
+```
+----- /query limnoria -----
+    user │ @config supybot.plugins.GigaChat.auth_creds 27ebd34b1a854ae6a5...
+limnoria │ user: The operation succeeded.
+```
+4. Use the `msg` command, if you're bot owner.
 ```
     user │ @msg Нужно ли мне следовать за белым кроликом?
 limnoria │ user: Это зависит от того, куда он вас приведет.
 ```
-4. If you want to allow other users to use the plugin, then use command below (for specified "user2").
+5. If you want to allow other users to use the plugin, then use command below (for specified "user2").
 ```
    user2 │ @msg Как образовалась группа "Король и Шут"?
 limnoria │ user2: Error: You don't have the gigachat capability...
@@ -32,7 +38,7 @@ limnoria │ user2: Группа «Король и Шут» была основ�
          │ Андреем Князевым и Александром Щиголевым. В то время они были
          │ студентами Ленинградского технологического института.
 ```
-5. Also, you can allow using command for any user (without registered accounts too).
+6. Also, you can allow using command for any user (without registered accounts too).
 ```
     user │ @defaultcapability remove -gigachat
 limnoria │ user: The operation succeeded.
