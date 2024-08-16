@@ -30,13 +30,9 @@ conf.registerGlobalValue(GigaChat, 'verify_ssl_certs',
         private=True))
 
 conf.registerGlobalValue(GigaChat, 'new_line_symbol',
-        registry.StringSurroundedBySpaces(' ↵ ', _("""Symbol (or string), which
-        will be used instead of newline (\\n) in GigaChat answers.""")))
+        registry.StringSurroundedBySpaces(' ↵ ', _("""String, which will be
+        used instead of newline (\\n) in GigaChat answers.""")))
 
-
-conf.registerChannelValue(GigaChat, 'enabled',
-        registry.Boolean(False, _("""Determines if AI is turned on in this
-        channel""")))
 
 conf.registerChannelValue(GigaChat, 'model',
         registry.String('GigaChat', _("""AI model that will be used for

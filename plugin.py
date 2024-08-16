@@ -1,4 +1,4 @@
-from supybot import utils, plugins, ircutils, callbacks
+from supybot import conf, callbacks
 from supybot.commands import *
 from supybot.i18n import PluginInternationalization
 
@@ -13,6 +13,7 @@ from gigachat.models import Chat, Messages, MessagesRole
 class GigaChat(callbacks.Plugin):
     """Implements GigaChat AI API."""
     threaded = True
+    conf.supybot.capabilities().add('-GigaChat')
 
     def _replace_new_lines(self, text: str) -> str:
         text = text.replace('\n\n', '\n')
@@ -27,10 +28,6 @@ class GigaChat(callbacks.Plugin):
         Sends the <message> to the GigaChat AI and prints answer. You can
         configure max tokens number that will be used for answer.
         """
-
-        if not self.registryValue('enabled'):
-            irc.error(_('Plugin is turned off in this channel'))
-            return
 
         creds = self.registryValue('auth_creds')
         if creds == '':
