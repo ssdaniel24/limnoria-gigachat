@@ -6,8 +6,8 @@ Requires [gigachat](https://github.com/ai-forever/gigachat) module.
 
 TODO:
 - translation
-- maybe complex chatting with saving messages
-- and managing them?..
+- add more auth methods to gigachat API
+- testing
 
 ## Commands
 
