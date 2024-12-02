@@ -51,7 +51,7 @@ limnoria │ user3: Серия романов «Экспансия» — это 
 
 ## Commands
 
-*Note: user must have capability "gigachat" to use plugin (plugin provides default anti-capability "-gigachat" to prevent possible abuse). See [Limnoria documentation about capabilities](https://docs.limnoria.net/use/capabilities.html#default)*
+*Note: user must have capability "gigachat" to use plugin (plugin provides default anti-capability "-gigachat" to prevent possible abuse). Just enter `admin capability add gigachat user` to give it him (see [Limnoria documentation about capabilities](https://docs.limnoria.net/use/capabilities.html#default)).*
 
 - `msg <text>` sends given text to the AI and prints its answer:
 
