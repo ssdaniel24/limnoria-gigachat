@@ -7,7 +7,7 @@ Requires [gigachat](https://github.com/ai-forever/gigachat) module.
 TODO to v1.0:
 - translation
 - add more auth methods to gigachat API
-- testing
+- add new command 'balance' for [viewing token balance](https://developers.sber.ru/docs/ru/gigachat/api/reference/rest/post-tokens-count)
 
 ## QuickStart
 
